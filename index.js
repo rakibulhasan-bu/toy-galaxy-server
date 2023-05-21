@@ -1,15 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-
+require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-require("dotenv").config();
+
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.urlencoded({ extended: true }));
 
 // testing server here
 app.get('/', (req, res) => {
@@ -17,6 +17,7 @@ app.get('/', (req, res) => {
 });
 
 // mongodb server functionality start here
+
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASSWORD}@cluster0.oz0lbz6.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -31,15 +32,15 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         // database name and collection name
         const database = client.db("toyGalaxyDB");
         const toyCollection = database.collection("toys");
         const blogCollection = database.collection("blogs");
 
-        // indexing for toy name
-        const result = await toyCollection.createIndex({ name: 1 }, { name: 'toyNameIndex' })
+        // // indexing for toy name
+        // const result = await toyCollection.createIndex({ name: 1 }, { name: 'toyNameIndex' })
         // get all the toys for all toys page
         app.get("/allToys/:text", async (req, res) => {
             const text = req.params.text;
