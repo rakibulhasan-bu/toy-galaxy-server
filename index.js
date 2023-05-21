@@ -36,6 +36,7 @@ async function run() {
         // database name and collection name
         const database = client.db("toyGalaxyDB");
         const toyCollection = database.collection("toys");
+        const blogCollection = database.collection("blogs");
 
         // indexing for toy name
         const result = await toyCollection.createIndex({ name: 1 }, { name: 'toyNameIndex' })
@@ -46,7 +47,7 @@ async function run() {
                 const result = await toyCollection.find({ subCategory: text }).toArray();
                 res.send(result)
             } else {
-                const result = await toyCollection.find({}).toArray();
+                const result = await toyCollection.find({}).limit(20).toArray();
                 res.send(result)
             }
         })
@@ -76,7 +77,19 @@ async function run() {
             const result = await toyCollection.insertOne(singleToy)
             res.send(result);
         })
+        // post or insert toys from add a toy page
+        app.post("/addABlog", async (req, res) => {
+            const singleToy = req.body;
+            const result = await blogCollection.insertOne(singleToy)
+            res.send(result);
+        })
 
+        // all blog show
+        app.get('/allBlog', async (req, res) => {
+            const result = await blogCollection.find({}).toArray();
+            console.log(result);
+            res.send(result)
+        })
         // delete one data
         app.delete('/deleteToy/:id', async (req, res) => {
             const id = req.params.id;
