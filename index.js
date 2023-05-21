@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -9,6 +9,7 @@ const port = process.env.PORT || 5000;
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // testing server here
 app.get('/', (req, res) => {
@@ -32,10 +33,57 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
-        app.get("/allToys", async (req, res) => {
-            res.send('all toys here')
+        // database name and collection name
+        const database = client.db("toyGalaxyDB");
+        const toyCollection = database.collection("toys");
+
+        // indexing for toy name
+        const result = await toyCollection.createIndex({ name: 1 }, { name: 'toyNameIndex' })
+        // get all the toys for all toys page
+        app.get("/allToys/:text", async (req, res) => {
+            const text = req.params.text;
+            if (text == 'Speedy_Racers' || text == 'Monster_Machines' || text == 'Rescue_Heroes' || text == 'Everyday_City_Cars' || text == 'Construction_Crew') {
+                const result = await toyCollection.find({ subCategory: text }).toArray();
+                res.send(result)
+            } else {
+                const result = await toyCollection.find({}).toArray();
+                res.send(result)
+            }
         })
-        console.log('object');
+
+        // get myToys based on email address
+        app.get('/myToys/:email', async (req, res) => {
+            const result = await toyCollection.find({ email: req.params.email }).sort({ price: 1 }).toArray();
+            res.send(result);
+        })
+        // get single toy data
+        app.get('/singleToys/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await toyCollection.findOne(query);
+            res.send(result);
+        })
+
+        // search toy name result
+        app.get('/searchByToyName/:text', async (req, res) => {
+            const text = req.params.text;
+            const result = await toyCollection.find({ name: { $regex: text, $options: 'i' } }).toArray();
+            res.send(result);
+        })
+        // post or insert toys from add a toy page
+        app.post("/addAToy", async (req, res) => {
+            const singleToy = req.body;
+            const result = await toyCollection.insertOne(singleToy)
+            res.send(result);
+        })
+
+        // delete one data
+        app.delete('/deleteToy/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await toyCollection.deleteOne(query);
+            res.send(result)
+        })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
