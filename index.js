@@ -87,7 +87,6 @@ async function run() {
         // all blog show
         app.get('/allBlog', async (req, res) => {
             const result = await blogCollection.find({}).toArray();
-            console.log(result);
             res.send(result)
         })
         // delete one data
