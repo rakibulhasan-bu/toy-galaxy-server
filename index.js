@@ -45,10 +45,10 @@ async function run() {
         app.get("/allToys/:text", async (req, res) => {
             const text = req.params.text;
             if (text == 'Speedy_Racers' || text == 'Monster_Machines' || text == 'Rescue_Heroes' || text == 'Everyday_City_Cars' || text == 'Construction_Crew') {
-                const result = await toyCollection.find({ subCategory: text }).toArray();
+                const result = await toyCollection.find({ subCategory: text }).sort({ price: 1 }).toArray();
                 res.send(result)
             } else {
-                const result = await toyCollection.find({}).limit(20).toArray();
+                const result = await toyCollection.find({}).limit(20).sort({ price: 1 }).toArray();
                 res.send(result)
             }
         })
